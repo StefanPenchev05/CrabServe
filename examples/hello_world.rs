@@ -1,11 +1,11 @@
-use CrabServe::server::{CrabServer, Server, ServerConfig};
+use std::error::Error;
 
-#[tokio::main]
-async fn main() {
+use CrabServe::server::{ CrabServer, Server };
 
-    let config = ServerConfig::new([127, 0,0,1], 3030);
-    let server = CrabServer::new(config);
-    if let Err(e) = server.run().await {
-        eprintln!("Server error: {}", e);
-    }
+#[tokio::main(worker_threads = 3)]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let server = CrabServer::new([127,0,0,1], 8080);
+    server.run(|addr|  println!("Server listening on http://{}", addr) ).await?;
+
+    Ok(())
 }
