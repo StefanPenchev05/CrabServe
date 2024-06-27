@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use std::net::{ SocketAddr, TcpListener };
-    use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpStream};
+    use std::net::{ SocketAddr };
+    use tokio::{ io::{ AsyncReadExt, AsyncWriteExt }, net::TcpStream };
     use CrabServe::server::{ CrabServer, Server };
 
     #[tokio::test]
@@ -24,7 +24,9 @@ mod tests {
     async fn test_server_run() {
         let server = CrabServer::new([127, 0, 0, 1], 8080);
         let server_task = tokio::spawn(async move {
-            server.run(|addr| { println!("Server is listening on http://{}", addr) }).await.unwrap()
+            server
+                .run(None, |addr| { println!("Server is listening on http://{}", addr) }).await
+                .unwrap()
         });
 
         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
@@ -41,7 +43,6 @@ mod tests {
         assert!(response.contains("HTTP/1.1 200 OK"));
         assert!(response.contains("Hello, World!"));
 
-        // Cleanup
         server_task.abort();
     }
 }

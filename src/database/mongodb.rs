@@ -1,7 +1,7 @@
 use crate::db::Database;
 use async_trait::async_trait;
 use serde::{ Deserialize, Serialize };
-use mongodb::{options::{Credential, TlsOptions, ClientOptions} ,Client };
+use mongodb::{ options::{ Credential, TlsOptions, ClientOptions }, Client };
 
 pub struct MongoDB {
     pub connection_string: String,
@@ -27,7 +27,6 @@ pub struct MongoDB {
 
 #[async_trait]
 impl Database for MongoDB {
-
     type ConnectionType = Client;
 
     fn new(connection_string: String, database_name: String) -> Self {
@@ -57,7 +56,7 @@ impl Database for MongoDB {
     async fn connect(&self) -> Result<Client, Box<dyn std::error::Error>> {
         let mut client_options = ClientOptions::parse(self.connection_string.to_string()).await?;
 
-        if let (Some(username), Some(password)) = (&self.auth_username, &self.auth_password){
+        if let (Some(username), Some(password)) = (&self.auth_username, &self.auth_password) {
             let credentials = Credential::builder()
                 .username(self.auth_username.clone())
                 .password(self.auth_password.clone())
@@ -67,13 +66,13 @@ impl Database for MongoDB {
             client_options.credential = Some(credentials);
         }
 
-        if self.use_tls{
+        if self.use_tls {
             use std::path::PathBuf;
-            
+
             let tls_options = TlsOptions::builder()
                 .ca_file_path(self.tls_certificate_path.clone().map(PathBuf::from))
                 .build();
-        
+
             client_options.tls = Some(tls_options.into());
         }
 

@@ -3,14 +3,19 @@ use std::net::{ IpAddr, Ipv4Addr, SocketAddr };
 use tokio::io::{ AsyncReadExt, AsyncWriteExt };
 use tokio::net::{ TcpListener, TcpStream };
 
+#[derive(Debug)]
 pub struct CrabServer {
-   pub addr: SocketAddr,
+    pub addr: SocketAddr,
 }
 
 pub trait Server {
     fn new(ip: [u8; 4], port: u16) -> Self;
-    async fn run<F>(&self, clouser: F) -> Result<(), Box<dyn std::error::Error>>
-        where F: FnMut(&SocketAddr);
+    async fn run<F>(
+        &self,
+        database_connection: Option<Box<dyn Fn() + Send>>,
+        clouser: F
+    ) -> Result<(), Box<dyn std::error::Error>>
+        where F: FnMut(&SocketAddr) + Send;
 }
 
 impl Server for CrabServer {
@@ -19,11 +24,19 @@ impl Server for CrabServer {
         CrabServer { addr }
     }
 
-    async fn run<F>(&self, mut clouser: F) -> Result<(), Box<dyn std::error::Error>>
-        where F: FnMut(&SocketAddr)
+    async fn run<F>(
+        &self,
+        database_connection: Option<Box<dyn Fn() + Send>>,
+        mut clouser: F
+    ) -> Result<(), Box<dyn std::error::Error>>
+        where F: FnMut(&SocketAddr) + Send
     {
         let listener = TcpListener::bind(&self.addr).await?;
 
+        match database_connection {
+            Some(db_connection) => db_connection(),
+            None => println!("No DataBase Initialized")
+        }
         clouser(&self.addr);
 
         loop {
