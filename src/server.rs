@@ -99,6 +99,12 @@ async fn handle_connection(mut socket: TcpStream) -> Result<(), Box<dyn std::err
                                 headers: HashMap::new(),
                                 body: b"Welcome to CrabServer".to_vec(),
                             },
+                        "/hello" =>
+                            Response {
+                                status_code: 200,
+                                headers: HashMap::new(),
+                                body: b"Welcome to CrabServer Other path, so the router is working".to_vec(),
+                            },
                         _ =>
                             Response {
                                 status_code: 404,

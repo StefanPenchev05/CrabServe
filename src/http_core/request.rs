@@ -53,7 +53,6 @@ pub trait HttpRequest {
     fn set_body_and_content_length(headers: &mut HashMap<String, String>, body: &[u8]);
 }
 
-
 #[async_trait]
 impl HttpRequest for Request {
     fn new(method: &str, path: &str) -> Self {
@@ -66,9 +65,11 @@ impl HttpRequest for Request {
     }
 
     async fn process_json_body(json_body: &str) -> Result<Value, serde_json::Error> {
-        let result = async {
-            serde_json::from_str(json_body)
-        }.await;
+        println!("Row JSON Bosy: {:?}", json_body);
+
+        let trimmed_body: &str = json_body.trim_matches(|c: char| c.is_whitespace() || c == '\0');
+
+        let result = serde_json::from_str(trimmed_body);
 
         result
     }
@@ -77,7 +78,7 @@ impl HttpRequest for Request {
         headers.insert("Content-Length".to_string(), body.len().to_string());
     }
 
-    async fn parse(raw_req: &str) -> Result<Self, RequestError> where Self: Sized{
+    async fn parse(raw_req: &str) -> Result<Self, RequestError> where Self: Sized {
         let result = (async {
             let mut lines = raw_req.lines();
 
@@ -108,10 +109,12 @@ impl HttpRequest for Request {
             let content_type = ContentType::from_str(&content_type_str).unwrap();
             let body_bytes = match content_type {
                 ContentType::ApplicationJson => {
-                    let json_value: serde_json::Value = serde_json
-                        ::from_str(body)
-                        .map_err(RequestError::JsonBodyProcessingError)?;
-                    serde_json::to_vec(&json_value).map_err(RequestError::JsonBodyProcessingError)?
+                    let json_value: serde_json::Value = Self::process_json_body(body).await.map_err(
+                        |e| RequestError::JsonBodyProcessingError(e)
+                    )?;
+                    serde_json
+                        ::to_vec(&json_value)
+                        .map_err(|e| RequestError::JsonBodyProcessingError(e))?
                 }
 
                 _ => body.as_bytes().to_vec(),
