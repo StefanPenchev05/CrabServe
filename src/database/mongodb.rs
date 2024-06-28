@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use serde::{ Deserialize, Serialize };
 use mongodb::{ error::ErrorKind, options::{ ClientOptions, Credential, TlsOptions }, Client };
 
+#[derive(Deserialize, Serialize)]
 pub struct MongoDB {
     pub connection_string: String,
     pub database_name: String,
