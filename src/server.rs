@@ -88,10 +88,8 @@ async fn handle_connection(mut socket: TcpStream) -> Result<(), Box<dyn std::err
     match socket.read(&mut buffer).await {
         Ok(_) => {
             let response_str = String::from_utf8(buffer.to_vec());
-            println!("{:#?}", response_str);
             match Request::parse(&response_str.unwrap()).await {
                 Ok(request) => {
-                    println!("{:#?}", request);
                     let response = match request.path.as_str() {
                         "/" =>
                             Response {
