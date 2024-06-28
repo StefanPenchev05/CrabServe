@@ -11,3 +11,4 @@ serde_json = "*"
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread", "net", "io-util", "time", "signal"] }
 mongodb = "*"
 async-trait = "0.1.80"
+log = "0.4.22"

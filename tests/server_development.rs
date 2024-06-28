@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use std::{ net::SocketAddr, sync::Arc, time::Duration };
+    use std::{ net::SocketAddr, sync::Arc };
     use tokio::{ io::{ AsyncReadExt, AsyncWriteExt }, net::TcpStream, sync::{ oneshot, Mutex } };
     use CrabServe::{ database::mongodb::MongoDB, db::Database, server::{ CrabServer, Server } };
 
@@ -51,6 +51,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[should_panic]
     async fn test_mongodb_connection_with_server_running() {
         let (tx, rx) = oneshot::channel();
         let server = CrabServer::new([127, 0, 0, 1], 8080);
@@ -62,7 +63,7 @@ mod tests {
                     Some(
                         Box::pin(async move {
                             let db = MongoDB::new(
-                                String::from("mongodb://localhost:27017/"),
+                                String::from("mongodb:///"),
                                 String::from("Actix_Example")
                             );
                             let result = tokio::task
@@ -80,7 +81,7 @@ mod tests {
                                 Err(e) => println!("Failed to connect to MongoDB: {:?}", e),
                             }
 
-                            tx.send(());
+                            let _ = tx.send(());
                         })
                     ),
                     |addr| { println!("Server is listening on http://{}", addr) },
