@@ -24,11 +24,11 @@ mod tests {
         assert_eq!(body, body_content.as_bytes());
     }
 
-    #[test]
-    fn test_parse_request() {
+    #[tokio::test]
+    async fn test_parse_request() {
         let raw_request =
             "GET /hello HTTP/1.1\r\nContent-Type: application/json\r\nAuthorization: Bearer token123\r\n\r\n{\"name\":\"John Doe\"}";
-        let request = Request::parse(raw_request).unwrap();
+        let request = Request::parse(raw_request).await.unwrap();
 
         // Assert method and path
         assert_eq!(request.method(), "GET");
@@ -45,11 +45,11 @@ mod tests {
         assert_eq!(request.get_body(), expected_body);
     }
 
-    #[test]
-    fn test_parse_request_more_larger_request() {
+    #[tokio::test]
+    async fn test_parse_request_more_larger_request() {
         let raw_request =
             "POST /api/users HTTP/1.1\r\nContent-Type: application/json\r\nAuthorization: Bearer token123\r\nCustom-Header: CustomValue\r\nContent-Length: 47\r\n\r\n{\"name\":\"John Doe\", \"email\":\"john@example.com\"}";
-        let request = Request::parse(raw_request).unwrap();
+        let request = Request::parse(raw_request).await.unwrap();
 
         // Assert method and path
         assert_eq!(request.method(), "POST");
