@@ -1,7 +1,9 @@
+use std::time::Duration;
+
 use crate::db::Database;
 use async_trait::async_trait;
 use serde::{ Deserialize, Serialize };
-use mongodb::{ options::{ Credential, TlsOptions, ClientOptions }, Client };
+use mongodb::{ error::ErrorKind, options::{ ClientOptions, Credential, TlsOptions }, Client };
 
 pub struct MongoDB {
     pub connection_string: String,
@@ -25,6 +27,7 @@ pub struct MongoDB {
     pub compression: Option<String>,
 }
 
+#[allow(unused_variables)]
 #[async_trait]
 impl Database for MongoDB {
     type ConnectionType = Client;
@@ -53,8 +56,9 @@ impl Database for MongoDB {
         }
     }
 
-    async fn connect(&self) -> Result<Client, Box<dyn std::error::Error>> {
+    async fn connect(&self) -> Result<(Client, String), Box<dyn std::error::Error>> {
         let mut client_options = ClientOptions::parse(self.connection_string.to_string()).await?;
+        client_options.server_selection_timeout = Some(Duration::from_millis(3000));
 
         if let (Some(username), Some(password)) = (&self.auth_username, &self.auth_password) {
             let credentials = Credential::builder()
@@ -77,7 +81,20 @@ impl Database for MongoDB {
         }
 
         let client = Client::with_options(client_options)?;
-        Ok(client)
+        match client.list_database_names().await {
+            Ok(_) => Ok((client, "Connection Established".to_string())),
+            Err(e) =>
+                match e.kind.as_ref() {
+                    ErrorKind::Io(io_error) if io_error.kind() == std::io::ErrorKind::TimedOut => {
+                        println!("Connection attempt timed out");
+                        Err(e.into())
+                    }
+                    _ => {
+                        println!("Failed to connect to MongoDB: {:?}", e);
+                        Err(e.into())
+                    }
+                }
+        }
     }
 
     async fn query(&self, query: String) -> Result<(), Box<dyn std::error::Error>> {

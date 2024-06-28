@@ -1,3 +1,4 @@
+#[allow(non_snake_case)]
 pub mod handler;
 pub mod macros;
 pub mod middleware;

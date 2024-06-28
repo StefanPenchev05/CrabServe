@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 serde = {version = "*", features = ["derive"]}
 serde_json = "*"
-tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread", "net", "io-util", "time"] }
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread", "net", "io-util", "time", "signal"] }
 mongodb = "*"
 async-trait = "0.1.80"
