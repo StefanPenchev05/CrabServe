@@ -3,8 +3,8 @@ use std::pin::Pin;
 use std::future::Future;
 use tokio::io::{ AsyncReadExt, AsyncWriteExt };
 use tokio::net::{ TcpListener, TcpStream };
-use tokio::signal;
 use tokio::sync::oneshot;
+use log::{ info, error };
 
 #[derive(Debug)]
 pub struct CrabServer {
@@ -39,24 +39,25 @@ impl Server for CrabServer {
         if let Some(db_connection) = database_connection {
             db_connection.await;
         } else {
-            println!("No DataBase Initialized");
+            info!("No DataBase Initialized");
         }
 
         on_listen(&self.addr);
+        info!("Server listening on {}", self.addr);
 
         match shutdown_signal {
             Some(shutdown) => {
                 tokio::select! {
                     res = accept_connections(listener) => {
                         if let Err(e) = res {
-                            eprintln!("Error accepting connections: {}", e);
+                            error!("Error accepting connections: {}", e);
                         }
                     },
                     _ = shutdown => {
-                        println!("Shutdown signal received, stopping server.");
+                        info!("Shutdown signal received, stopping server.");
                     }
                 }
-            },
+            }
             None => {
                 accept_connections(listener).await?;
             }
@@ -71,7 +72,7 @@ async fn accept_connections(listener: TcpListener) -> Result<(), Box<dyn std::er
         let (socket, _) = listener.accept().await?;
         tokio::spawn(async move {
             if let Err(e) = handle_connection(socket).await {
-                eprintln!("Failed to handle connection: {}", e);
+                error!("Failed to handle connection: {}", e);
             }
         });
     }
@@ -80,9 +81,15 @@ async fn accept_connections(listener: TcpListener) -> Result<(), Box<dyn std::er
 async fn handle_connection(mut socket: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
     let mut buffer = [0; 1024];
 
-    let _ = socket.read(&mut buffer).await?;
-    let response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-    socket.write_all(response.as_bytes()).await?;
+    match socket.read(&mut buffer).await {
+        Ok(_) => {
+            let response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+            socket.write_all(response.as_bytes()).await?;
+        }
+        Err(e) => {
+            error!("Failed to read from socket; err = {:?}", e);
+        }
+    }
 
     Ok(())
 }
