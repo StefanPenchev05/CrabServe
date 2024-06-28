@@ -22,7 +22,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_server_run() {
-        let server = CrabServer::new([127, 0, 0, 1], 8080);
+        let server = CrabServer::new([127, 0, 0, 1], 3030);
         let server_task = tokio::spawn(async move {
             server
                 .run(
@@ -35,7 +35,7 @@ mod tests {
 
         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
 
-        let mut stream = TcpStream::connect("127.0.0.1:8080").await.unwrap();
+        let mut stream = TcpStream::connect("127.0.0.1:3030").await.unwrap();
 
         let request = "GET / HTTP/1.1\r\n\r\n";
         stream.write_all(request.as_bytes()).await.unwrap();
