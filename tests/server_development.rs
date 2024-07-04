@@ -2,7 +2,7 @@
 mod tests {
     use std::{ net::SocketAddr, sync::Arc };
     use tokio::{ io::{ AsyncReadExt, AsyncWriteExt }, net::TcpStream, sync::{ oneshot, Mutex } };
-    use CrabServe::{ database::mongodb::MongoDB, db::Database, server::{ CrabServer, Server } };
+    use CrabServe::{ database::mongodb::MongoDB, database::db::Database, server::{ CrabServer, Server } };
 
     #[tokio::test]
     async fn test_server_addr() {

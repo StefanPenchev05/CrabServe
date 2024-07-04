@@ -8,11 +8,10 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "log",
+ "macros",
  "mongodb",
- "quote",
  "serde",
  "serde_json",
- "syn 2.0.68",
  "thiserror",
  "tokio",
 ]
@@ -630,6 +629,10 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.68",
+]
 
 [[package]]
 name = "match_cfg"

@@ -6,5 +6,5 @@ mod route;
 
 #[proc_macro_attribute]
 pub fn get(args: TokenStream, input: TokenStream) -> TokenStream {
-    
+    route::get(args, input)
 }
