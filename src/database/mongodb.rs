@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::db::Database;
+use super::db::Database;
 use async_trait::async_trait;
 use serde::{ Deserialize, Serialize };
 use mongodb::{ error::ErrorKind, options::{ ClientOptions, Credential, TlsOptions }, Client };

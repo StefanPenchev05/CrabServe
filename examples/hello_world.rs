@@ -2,7 +2,7 @@ use std::error::Error;
 
 use CrabServe::server::{ CrabServer, Server };
 use CrabServe::database::mongodb::MongoDB;
-use CrabServe::db::Database;
+use CrabServe::database::db::Database;
 
 #[tokio::main(worker_threads = 3)]
 async fn main() -> Result<(), Box<dyn Error>> {
